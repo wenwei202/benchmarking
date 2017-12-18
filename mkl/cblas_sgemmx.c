@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
       clock_t start = clock(), diff, total=0;
       int test_cnt=1000;
       for(int cnt=0; cnt<test_cnt; cnt++){
-            FillMatrixS('r', a, rmaxa*cmaxa); //change a
+            FillMatrixS('r', b, rmaxb*cmaxb); //change b
             start = clock();
             cblas_sgemm(layout, transA, transB, m, n, k, alpha,
                   a, lda, b, ldb, beta, c, ldc);
