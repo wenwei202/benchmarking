@@ -29,6 +29,8 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <math.h>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 #include "mkl_example.h"
 #include "mkl_cblas.h"
@@ -1562,3 +1564,14 @@ void PrintBandArrayZ(CBLAS_LAYOUT*layout, int flag,
       return;
 } /* PrintBandArrayZ */
 
+void FillMatrixS(char mode,float *in_array,  MKL_INT num){
+    if('r'==mode){//random
+        srand (time(NULL));
+        for(MKL_INT i=0; i<num; i++){
+            in_array[i]=rand() % 10 + 1;
+        }
+    }else{
+           memset(in_array, mode, num);
+    }
+    return;
+}

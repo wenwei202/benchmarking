@@ -32,46 +32,31 @@
 
 int main(int argc, char *argv[])
 {
-      FILE *in_file;
-      char *in_file_name;
 
       MKL_INT         m, n, k;
       MKL_INT         lda, ldb, ldc;
       MKL_INT         rmaxa, cmaxa, rmaxb, cmaxb, rmaxc, cmaxc;
-      float           alpha, beta;
+      float           alpha=1.0, beta=0.0;
       float          *a, *b, *c;
-      CBLAS_LAYOUT    layout;
-      CBLAS_TRANSPOSE transA, transB;
+      CBLAS_LAYOUT    layout=CblasRowMajor;
+      CBLAS_TRANSPOSE transA=CblasNoTrans, transB=CblasNoTrans;
       MKL_INT         ma, na, mb, nb;
 
       printf("\n     C B L A S _ S G E M M  EXAMPLE PROGRAM\n");
 
 /*       Get input parameters                                  */
 
-      if( argc == 1 ) {
-          printf("\n You must specify in_file data file as 1-st parameter");
+      if( argc != 4 ) {
+          printf("\n please specify M K N");
           return 1;
       }
-      in_file_name = argv[1];
+      m = atoi(argv[1]);
+      k = atoi(argv[2]);
+      n = atoi(argv[3]);
+      printf("m=%d, k=%d, n=%d\n", m, k, n);
 
 /*       Get input data                                        */
 
-      if( (in_file = fopen( in_file_name, "r" )) == NULL ) {
-         printf("\n ERROR on OPEN '%s' with mode=\"r\"\n", in_file_name);
-         return 1;
-      }
-      if( GetIntegerParameters(in_file, &m, &n, &k) != 3 ) {
-          printf("\n ERROR of m, n, k reading\n");
-          return 1;
-      }
-      if( GetScalarsS(in_file, &alpha, &beta) != 2 ) {
-          printf("\n ERROR of alpha, beta reading\n");
-          return 1;
-      }
-      if( GetCblasCharParameters(in_file, &transA, &transB, &layout) != 3 ) {
-          printf("\n ERROR of transA, transB, layout reading\n");
-          return 1;
-      }
 
       if( transA == CblasNoTrans ) {
          rmaxa = m + 1;
@@ -113,6 +98,7 @@ int main(int argc, char *argv[])
           ldb=rmaxb;
           ldc=rmaxc;
       }
+/*
       if( GetArrayS(in_file, &layout, GENERAL_MATRIX, &ma, &na, a, &lda) != 0 ) {
         printf("\n ERROR of array A reading\n");
         return 1;
@@ -125,7 +111,11 @@ int main(int argc, char *argv[])
         printf("\n ERROR of array C reading\n");
         return 1;
       }
-      fclose(in_file);
+*/
+      //initial matrix
+      FillMatrixS('r', a, rmaxa*cmaxa);
+      FillMatrixS('r', b, rmaxb*cmaxb);
+      FillMatrixS('r', c, rmaxc*cmaxc);
 
 /*       Print input data                                      */
 
@@ -152,6 +142,7 @@ int main(int argc, char *argv[])
       mkl_free(b);
       mkl_free(c);
 
+      printf("\nTest done!\n");
       return 0;
 }
 

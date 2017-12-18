@@ -22,6 +22,6 @@ all: gemm_test spblas_test
 	echo "making gemm_test spblas_test"
 
 clean:
-	rm ./gemm_test
+	rm ./gemm_test 
 	rm ./spblas_test
 	rm ./*.o
