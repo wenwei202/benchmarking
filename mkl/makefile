@@ -15,6 +15,13 @@ LDFLAGS=-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ld
 gemm_test: common_func.o cblas_sgemmx.o 
 	gcc -o gemm_test common_func.o cblas_sgemmx.o $(CFLAGS) $(LDFLAGS)
 
+spblas_test: cspblas_scsr.o 
+	gcc -o spblas_test cspblas_scsr.o $(CFLAGS) $(LDFLAGS)
+
+all: gemm_test spblas_test
+	echo "making gemm_test spblas_test"
+
 clean:
 	rm ./gemm_test
+	rm ./spblas_test
 	rm ./*.o
