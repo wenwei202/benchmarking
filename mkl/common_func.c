@@ -1566,12 +1566,34 @@ void PrintBandArrayZ(CBLAS_LAYOUT*layout, int flag,
 
 void FillMatrixS(char mode,float *in_array,  MKL_INT num){
     if('r'==mode){//random
-        srand (time(NULL));
         for(MKL_INT i=0; i<num; i++){
             in_array[i]=rand() % 10 + 1;
         }
     }else{
            memset(in_array, mode, num);
     }
+    return;
+}
+
+void FillSparseMatrixS(float *in_array,  MKL_INT num, MKL_INT nonzero_num){
+    memset(in_array, 0, num);
+
+    if(nonzero_num<0) nonzero_num = 0;
+    else if(nonzero_num>num) nonzero_num=num;
+    
+    // fill first elements
+    for(MKL_INT i=0; i<nonzero_num; i++){
+        in_array[i]=rand() % 10 + 1;
+    }
+
+    //permute
+    for(MKL_INT i=num-1; i>0; --i){
+        MKL_INT j = rand() % i;
+        //swap
+        float tmp = in_array[i];
+        in_array[i] = in_array[j];
+        in_array[j] = tmp;
+    }
+    
     return;
 }

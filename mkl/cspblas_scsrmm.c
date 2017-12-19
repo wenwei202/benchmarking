@@ -37,58 +37,66 @@ int main(int argc, char *argv[])
       srand (time(NULL));
 
       MKL_INT         m, n, k;
+      float sparsity = 0.0;
       MKL_INT         lda, ldb, ldc;
       MKL_INT         rmaxa, cmaxa, rmaxb, cmaxb, rmaxc, cmaxc;
       float           alpha=1.0, beta=0.0;
-      float          *a, *b, *c;
+      float          *a, *spa_vals, *b, *c;
+      MKL_INT *nz_idx, *nz_ptr;
       CBLAS_LAYOUT    layout=CblasRowMajor;
       CBLAS_TRANSPOSE transA=CblasNoTrans, transB=CblasNoTrans;
       MKL_INT         ma, na, mb, nb;
 
-      printf("\n     C B L A S _ S G E M M  EXAMPLE PROGRAM\n");
-
 /*       Get input parameters                                  */
 
-      if( argc != 4 ) {
-          printf("\n please specify M K N");
+      if( argc != 5 ) {
+          printf("\n please specify M K N sparsity");
           return 1;
       }
       m = atoi(argv[1]);
       k = atoi(argv[2]);
       n = atoi(argv[3]);
-      printf("m=%d, k=%d, n=%d\n", m, k, n);
+      sparsity = atof(argv[4]);
+      printf("m=%d, k=%d, n=%d, sparsity=%f\n", m, k, n, sparsity);
+
+      MKL_INT num = m*k;
+      MKL_INT nonzero_num = (int)(num*(1-sparsity));
+      if(nonzero_num<=0) nonzero_num = 1;
+      else if(nonzero_num>num) nonzero_num=num;
+      const MKL_INT job[] = {0,0,0,2,m*k,1};
 
 /*       Get input data                                        */
-
-
       if( transA == CblasNoTrans ) {
-         rmaxa = m + 1;
+         rmaxa = m;
          cmaxa = k;
          ma    = m;
          na    = k;
       } else {
-         rmaxa = k + 1;
+         rmaxa = k;
          cmaxa = m;
          ma    = k;
          na    = m;
       }
       if( transB == CblasNoTrans ) {
-         rmaxb = k + 1;
+         rmaxb = k;
          cmaxb = n;
          mb    = k;
          nb    = n;
       } else {
-         rmaxb = n + 1;
+         rmaxb = n;
          cmaxb = k;
          mb    = n;
          nb    = k;
       }
-      rmaxc = m + 1;
+      rmaxc = m;
       cmaxc = n;
       a = (float *)mkl_calloc(rmaxa*cmaxa, sizeof( float ), 64);
+      spa_vals = (float *)mkl_calloc(nonzero_num, sizeof( float ), 64);
+      nz_idx = (MKL_INT *)mkl_calloc(nonzero_num, sizeof( MKL_INT ), 64);
+      nz_ptr = (MKL_INT *)mkl_calloc(m+1, sizeof( MKL_INT ), 64);
       b = (float *)mkl_calloc(rmaxb*cmaxb, sizeof( float ), 64);
       c = (float *)mkl_calloc(rmaxc*cmaxc, sizeof( float ), 64);
-      if( a == NULL || b == NULL || c == NULL ) {
+      if( a == NULL || b == NULL || c == NULL || spa_vals == NULL || nz_idx==NULL || nz_ptr==NULL) {
           printf( "\n Can't allocate memory for arrays\n");
           return 1;
       }
@@ -116,7 +124,10 @@ int main(int argc, char *argv[])
       }
 */
       //initial matrix
-      FillMatrixS('r', a, rmaxa*cmaxa);
+      MKL_INT info;
+      FillSparseMatrixS( a, rmaxa*cmaxa, nonzero_num);
+      mkl_sdnscsr(job, &m, &k, a, &lda, spa_vals, nz_idx, nz_ptr, &info);
+      if(info) printf("mkl_sdnscsr failed at %d-th row", info);
       FillMatrixS('r', b, rmaxb*cmaxb);
       FillMatrixS('r', c, rmaxc*cmaxc);
 
@@ -127,15 +138,16 @@ int main(int argc, char *argv[])
       printf("\n       ALPHA=%5.1f  BETA=%5.1f", alpha, beta);
       PrintParameters("TRANSA, TRANSB", transA, transB);
       PrintParameters("LAYOUT", layout);
-      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &ma, &na, a, &lda, "A");
-      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &mb, &nb, b, &ldb, "B");
-      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
+      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &ma, &na, a, &lda, "A");
+      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &mb, &nb, b, &ldb, "B");
+      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
       
       //first run
-      cblas_sgemm(layout, transA, transB, m, n, k, alpha,
-                  a, lda, b, ldb, beta, c, ldc);
-
-/*      Call SGEMM subroutine ( C Interface )                  */
+      const char *matdescra = "GXXCX";//6 bytes
+      const char transa = 'N';
+      mkl_scsrmm(&transa, &m , &n, &k, &alpha , matdescra, 
+                     spa_vals, nz_idx, nz_ptr, nz_ptr+1, b, &ldb, &beta, c, &ldc);
+/*
       clock_t start = clock(), diff, total=0;
       int test_cnt=1000;
       for(int cnt=0; cnt<test_cnt; cnt++){
@@ -149,16 +161,19 @@ int main(int argc, char *argv[])
             printf("Test %d: %d ms\n", cnt, msec);
       }
       printf("Average: %d ms\n", total/test_cnt);
-      
+  */    
 
 /*       Print output data                                     */
 
-      //printf("\n\n     OUTPUT DATA");
-      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
+      printf("\n\n     OUTPUT DATA");
+      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
 
       mkl_free(a);
       mkl_free(b);
       mkl_free(c);
+      mkl_free(spa_vals);
+      mkl_free(nz_idx);
+      mkl_free(nz_ptr);
 
       printf("\nTest done!\n");
       return 0;

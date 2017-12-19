@@ -13,10 +13,10 @@ LDFLAGS=-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ld
 	$(CC) -c -o $@ $< $(CFLAGS) $(LDFLAGS)
 
 gemm_test: common_func.o cblas_sgemmx.o 
-	gcc -o gemm_test common_func.o cblas_sgemmx.o $(CFLAGS) $(LDFLAGS)
+	$(CC) -o gemm_test common_func.o cblas_sgemmx.o $(CFLAGS) $(LDFLAGS)
 
-spblas_test: cspblas_scsr.o 
-	gcc -o spblas_test cspblas_scsr.o $(CFLAGS) $(LDFLAGS)
+spblas_test: common_func.o cspblas_scsrmm.o 
+	$(CC) -o spblas_test common_func.o cspblas_scsrmm.o $(CFLAGS) $(LDFLAGS)
 
 all: gemm_test spblas_test
 	echo "making gemm_test spblas_test"

@@ -100,7 +100,8 @@ void PrintBandArrayS(CBLAS_LAYOUT*, int, MKL_INT, MKL_INT, MKL_INT, MKL_INT, flo
 void PrintBandArrayD(CBLAS_LAYOUT*, int, MKL_INT, MKL_INT, MKL_INT, MKL_INT, double*, MKL_INT, char*);
 void PrintBandArrayC(CBLAS_LAYOUT*, int, MKL_INT, MKL_INT, MKL_INT, MKL_INT, MKL_Complex8*, MKL_INT, char*);
 void PrintBandArrayZ(CBLAS_LAYOUT*, int, MKL_INT, MKL_INT, MKL_INT, MKL_INT, MKL_Complex16*, MKL_INT, char*);
-
+void FillMatrixS(char mode,float *in_array,  MKL_INT num);
+void FillSparseMatrixS(float *in_array,  MKL_INT num, MKL_INT nonzero_num);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
