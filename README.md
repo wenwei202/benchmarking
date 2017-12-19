@@ -20,5 +20,5 @@ GEMM benchmarking:
 
 SparseBlas benchmarking:
 ```
-./gemm_test 6000 3000 20 0.9
+./spblas_test 6000 3000 20 0.9
 ```
