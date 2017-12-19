@@ -127,7 +127,10 @@ int main(int argc, char *argv[])
       MKL_INT info;
       FillSparseMatrixS( a, rmaxa*cmaxa, nonzero_num);
       mkl_sdnscsr(job, &m, &k, a, &lda, spa_vals, nz_idx, nz_ptr, &info);
-      if(info) printf("mkl_sdnscsr failed at %d-th row", info);
+      if(info) {
+         printf("the mkl_sdnscsr routine is interrupted processing the %d-th row because there is no space in the arrays acsr and ja according to the value nzmax.", info);
+         return -1;
+      }
       FillMatrixS('r', b, rmaxb*cmaxb);
       FillMatrixS('r', c, rmaxc*cmaxc);
 
@@ -138,35 +141,35 @@ int main(int argc, char *argv[])
       printf("\n       ALPHA=%5.1f  BETA=%5.1f", alpha, beta);
       PrintParameters("TRANSA, TRANSB", transA, transB);
       PrintParameters("LAYOUT", layout);
-      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &ma, &na, a, &lda, "A");
-      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &mb, &nb, b, &ldb, "B");
-      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
+      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &ma, &na, a, &lda, "A");
+      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &mb, &nb, b, &ldb, "B");
+      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
       
       //first run
       const char *matdescra = "GXXCX";//6 bytes
       const char transa = 'N';
       mkl_scsrmm(&transa, &m , &n, &k, &alpha , matdescra, 
                      spa_vals, nz_idx, nz_ptr, nz_ptr+1, b, &ldb, &beta, c, &ldc);
-/*
+
       clock_t start = clock(), diff, total=0;
       int test_cnt=1000;
       for(int cnt=0; cnt<test_cnt; cnt++){
             FillMatrixS('r', b, rmaxb*cmaxb); //change b
             start = clock();
-            cblas_sgemm(layout, transA, transB, m, n, k, alpha,
-                  a, lda, b, ldb, beta, c, ldc);
+            mkl_scsrmm(&transa, &m , &n, &k, &alpha , matdescra, 
+                     spa_vals, nz_idx, nz_ptr, nz_ptr+1, b, &ldb, &beta, c, &ldc);
             diff = clock() - start;
             int msec = diff*1000 / CLOCKS_PER_SEC;
             total += msec;
             printf("Test %d: %d ms\n", cnt, msec);
       }
       printf("Average: %d ms\n", total/test_cnt);
-  */    
+      
 
 /*       Print output data                                     */
 
-      printf("\n\n     OUTPUT DATA");
-      PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
+      //printf("\n\n     OUTPUT DATA");
+      //PrintArrayS(&layout, FULLPRINT, GENERAL_MATRIX, &m, &n, c, &ldc, "C");
 
       mkl_free(a);
       mkl_free(b);
