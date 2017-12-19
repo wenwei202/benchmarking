@@ -17,3 +17,8 @@ GEMM benchmarking:
 ```
 ./gemm_test 6000 3000 20
 ```
+
+SparseBlas benchmarking:
+```
+./spblas_test 4 8 6 0.8
+```
