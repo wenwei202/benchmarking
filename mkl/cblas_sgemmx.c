@@ -136,7 +136,8 @@ int main(int argc, char *argv[])
                   a, lda, b, ldb, beta, c, ldc);
 
 /*      Call SGEMM subroutine ( C Interface )                  */
-      clock_t start = clock(), diff, total=0;
+      clock_t start = clock(), diff;
+      float total=0.0;
       int test_cnt=1000;
       for(int cnt=0; cnt<test_cnt; cnt++){
             FillMatrixS('r', b, rmaxb*cmaxb); //change b
@@ -144,11 +145,11 @@ int main(int argc, char *argv[])
             cblas_sgemm(layout, transA, transB, m, n, k, alpha,
                   a, lda, b, ldb, beta, c, ldc);
             diff = clock() - start;
-            int msec = diff*1000 / CLOCKS_PER_SEC;
+            float msec = diff*1000.0 / CLOCKS_PER_SEC;
             total += msec;
-            printf("Test %d: %d ms\n", cnt, msec);
+            printf("Test %d: %f ms\n", cnt, msec);
       }
-      printf("Average: %d ms\n", total/test_cnt);
+      printf("Average: %f ms\n", total/test_cnt);
       
 
 /*       Print output data                                     */
