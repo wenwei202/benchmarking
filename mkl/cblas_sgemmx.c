@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 /*      Call SGEMM subroutine ( C Interface )                  */
       clock_t start = clock(), diff;
       float total=0.0;
-      int test_cnt=1000;
+      int test_cnt=5000;
       for(int cnt=0; cnt<test_cnt; cnt++){
             FillMatrixS('r', b, rmaxb*cmaxb); //change b
             start = clock();
